@@ -30,7 +30,8 @@ const parameters = {
     randomnessPower: 2,
     insideColor: '#ffffff',
     outsideColor: '#ffffff',
-    rotation: 0.02
+    rotation: 0,
+    waviness: false
 }
 
 // galaxy parameters declared beforehand in order to be able to destroy the old galaxy
@@ -91,7 +92,15 @@ const generateGalaxy = () => {
         sizeAttenuation: true,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
-        vertexColors: true
+        vertexColors: true,
+
+        // These are extra properties I was tinkering around with to see the best effects
+        // particlesMaterial.alphaMap = particleTexture
+        // particlesMaterial.transparent = true
+        // particlesMaterial.alphaTest = 0.001
+        // particleTexture.depthText = false
+        // particlesMaterial.depthWrite = false
+        // particlesMaterial.blending = THREE.AdditiveBlending
     })
 
     // Points
@@ -105,38 +114,6 @@ generateGalaxy()
  */
 const textureLoader = new THREE.TextureLoader()
 const particleTexture = textureLoader.load('/textures/particles/8.png')
-
-/**
- * Particles
- */
-// Geometry
-// const particlesGeometry = new THREE.BufferGeometry()
-// const count = 200000
-// const positions = new Float32Array(count * 3);
-// const colors = new Float32Array(count * 3)
-// for (let i = 0; i < count; i++) {
-//     positions[i] = (Math.random() - 0.5) * 10
-//     colors[i] = Math.random()
-// }
-// particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-// particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
-
-// Materials
-// const particlesMaterial = new THREE.PointsMaterial()
-// particlesMaterial.size = 0.01
-// particlesMaterial.sizeAttenuation = true
-// // particlesMaterial.color = new THREE.Color('green')
-// particlesMaterial.alphaMap = particleTexture
-// particlesMaterial.transparent = true
-// // particlesMaterial.alphaTest = 0.001
-// // particleTexture.depthText = false
-// particlesMaterial.depthWrite = false
-// particlesMaterial.blending = THREE.AdditiveBlending
-// particlesMaterial.vertexColors = true
-
-// Points
-// const particles = new THREE.Points(particlesGeometry, particlesMaterial)
-// scene.add(particles)
 
 /**
  * Sizes
@@ -191,16 +168,15 @@ const tick = () =>
 {
     const elapsedTime = clock.getElapsedTime()
 
-    // Update particles to spin
-    // particles.rotation.y = elapsedTime * 0.2
-
-    // To create a wavelike effect with all the particles
-    // for (let i = 0; i < count; i++) {
-    //     let i3 = i * 3
-    //     let x = particlesGeometry.attributes.position.array[i3]
-    //     particlesGeometry.attributes.position.array[i3 + 1] = Math.sin(elapsedTime + x)
-    // }
-    // particlesGeometry.attributes.position.needsUpdate = true
+    // Update galaxy to create a wavelike effect with all the particles
+    if (parameters.waviness === true) {
+        for (let i = 0; i < parameters.count; i++) {
+            let i3 = i * 3
+            let x = galaxyGeometry.attributes.position.array[i3]
+            galaxyGeometry.attributes.position.array[i3 + 1] = Math.sin(elapsedTime + x)
+        }
+        galaxyGeometry.attributes.position.needsUpdate = true
+    }
 
     // Update galaxy to spin
     galaxyPoints.rotation.y = elapsedTime * parameters.rotation
@@ -225,6 +201,7 @@ gui.add(parameters, 'randomness').min(0).max(2).step(0.001).onFinishChange(gener
 gui.add(parameters, 'randomnessPower').min(1).max(10).step(0.01).onFinishChange(generateGalaxy)
 gui.addColor(parameters, 'insideColor').onFinishChange(generateGalaxy)
 gui.addColor(parameters, 'outsideColor').onFinishChange(generateGalaxy)
-gui.add(parameters, 'rotation').min(0).max(10).step(0.001).onFinishChange(generateGalaxy)
+gui.add(parameters, 'rotation').min(0).max(3).step(0.001).onFinishChange(generateGalaxy)
+gui.add(parameters, 'waviness').onFinishChange(generateGalaxy)
 
 tick()
