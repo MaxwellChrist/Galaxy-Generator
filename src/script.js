@@ -30,6 +30,7 @@ const parameters = {
     randomnessPower: 2,
     insideColor: '#ffffff',
     outsideColor: '#ffffff',
+    rotation: 0.02
 }
 
 // galaxy parameters declared beforehand in order to be able to destroy the old galaxy
@@ -99,16 +100,6 @@ const generateGalaxy = () => {
 }
 generateGalaxy()
 
-// controls for count and size
-gui.add(parameters, 'count').min(100).max(1000000).step(100).onFinishChange(generateGalaxy)
-gui.add(parameters, 'size').min(0.001).max(0.1).step(0.001).onFinishChange(generateGalaxy)
-gui.add(parameters, 'radius').min(0.01).max(20).step(0.01).onFinishChange(generateGalaxy)
-gui.add(parameters, 'branches').min(1).max(30).step(1).onFinishChange(generateGalaxy)
-gui.add(parameters, 'spin').min(-6).max(6).step(0.001).onFinishChange(generateGalaxy)
-gui.add(parameters, 'randomness').min(0).max(2).step(0.001).onFinishChange(generateGalaxy)
-gui.add(parameters, 'randomnessPower').min(1).max(10).step(0.01).onFinishChange(generateGalaxy)
-gui.addColor(parameters, 'insideColor').onFinishChange(generateGalaxy)
-gui.addColor(parameters, 'outsideColor').onFinishChange(generateGalaxy)
 /**
  * Textures
  */
@@ -211,6 +202,9 @@ const tick = () =>
     // }
     // particlesGeometry.attributes.position.needsUpdate = true
 
+    // Update galaxy to spin
+    galaxyPoints.rotation.y = elapsedTime * parameters.rotation
+
     // Update controls
     controls.update()
 
@@ -220,5 +214,17 @@ const tick = () =>
     // Call tick again on the next frame
     window.requestAnimationFrame(tick)
 }
+
+// controls for use to create galaxy customizations
+gui.add(parameters, 'count').min(100).max(1000000).step(100).onFinishChange(generateGalaxy)
+gui.add(parameters, 'size').min(0.001).max(0.1).step(0.001).onFinishChange(generateGalaxy)
+gui.add(parameters, 'radius').min(0.01).max(20).step(0.01).onFinishChange(generateGalaxy)
+gui.add(parameters, 'branches').min(1).max(30).step(1).onFinishChange(generateGalaxy)
+gui.add(parameters, 'spin').min(-6).max(6).step(0.001).onFinishChange(generateGalaxy)
+gui.add(parameters, 'randomness').min(0).max(2).step(0.001).onFinishChange(generateGalaxy)
+gui.add(parameters, 'randomnessPower').min(1).max(10).step(0.01).onFinishChange(generateGalaxy)
+gui.addColor(parameters, 'insideColor').onFinishChange(generateGalaxy)
+gui.addColor(parameters, 'outsideColor').onFinishChange(generateGalaxy)
+gui.add(parameters, 'rotation').min(0).max(10).step(0.001).onFinishChange(generateGalaxy)
 
 tick()
