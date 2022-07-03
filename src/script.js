@@ -22,7 +22,14 @@ const scene = new THREE.Scene()
 // Parameters
 const parameters = {
     count: 1000,
-    size: 0.02
+    size: 0.02,
+    radius: 5,
+    branches: 3,
+    spin: 0,
+    randomness: 0.2,
+    randomnessPower: 2,
+    insideColor: '#ffffff',
+    outsideColor: '#ffffff',
 }
 
 // galaxy parameters declared beforehand in order to be able to destroy the old galaxy
@@ -43,20 +50,47 @@ const generateGalaxy = () => {
     // Geometry
     galaxyGeometry = new THREE.BufferGeometry()
     let galaxyPositions = new Float32Array(parameters.count * 3)
+    let galaxyColors = new Float32Array(parameters.count * 3)
+
+    const colorInside = new THREE.Color(parameters.insideColor)
+    const colorOutside = new THREE.Color(parameters.outsideColor)
+
     for (let i = 0; i < parameters.count; i++) {
+
         const i3 = i * 3
-        galaxyPositions[i3] = (Math.random() - 0.5) * 10
-        galaxyPositions[i3 + 1] = (Math.random() - 0.5) * 10
-        galaxyPositions[i3 + 2] = (Math.random() - 0.5) * 10
+
+        // Position
+        const radius = Math.random() * parameters.radius
+        const spinAngle = radius * parameters.spin
+        const branchAngle = (i % parameters.branches) / parameters.branches * Math.PI * 2
+
+        const randomX = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius
+        const randomY = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius
+        const randomZ = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius
+
+        galaxyPositions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX
+        galaxyPositions[i3 + 1] = randomY
+        galaxyPositions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ
+
+        // Colors
+        const mixedColor = colorInside.clone()
+        mixedColor.lerp(colorOutside, radius / parameters.radius)
+
+        galaxyColors[i3] = mixedColor.r
+        galaxyColors[i3 + 1] = mixedColor.g
+        galaxyColors[i3 + 2] = mixedColor.b
+
     }
     galaxyGeometry.setAttribute('position', new THREE.BufferAttribute(galaxyPositions, 3))
+    galaxyGeometry.setAttribute('color', new THREE.BufferAttribute(galaxyColors, 3))
 
     // Materials
     galaxyMaterials = new THREE.PointsMaterial({ 
         size: parameters.size,
         sizeAttenuation: true,
         depthWrite: false,
-        blending: THREE.AdditiveBlending
+        blending: THREE.AdditiveBlending,
+        vertexColors: true
     })
 
     // Points
@@ -68,7 +102,13 @@ generateGalaxy()
 // controls for count and size
 gui.add(parameters, 'count').min(100).max(1000000).step(100).onFinishChange(generateGalaxy)
 gui.add(parameters, 'size').min(0.001).max(0.1).step(0.001).onFinishChange(generateGalaxy)
-
+gui.add(parameters, 'radius').min(0.01).max(20).step(0.01).onFinishChange(generateGalaxy)
+gui.add(parameters, 'branches').min(1).max(30).step(1).onFinishChange(generateGalaxy)
+gui.add(parameters, 'spin').min(-6).max(6).step(0.001).onFinishChange(generateGalaxy)
+gui.add(parameters, 'randomness').min(0).max(2).step(0.001).onFinishChange(generateGalaxy)
+gui.add(parameters, 'randomnessPower').min(1).max(10).step(0.01).onFinishChange(generateGalaxy)
+gui.addColor(parameters, 'insideColor').onFinishChange(generateGalaxy)
+gui.addColor(parameters, 'outsideColor').onFinishChange(generateGalaxy)
 /**
  * Textures
  */
